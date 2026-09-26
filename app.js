@@ -24,7 +24,7 @@
 </html>
 `,
     'styles.css': `:root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
@@ -37,8 +37,8 @@ body {
   display: grid;
   place-items: center;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #111827;
-  color: #f9fafb;
+  background: #efe5c2;
+  color: #3d3618;
 }
 
 .panel {
@@ -47,40 +47,42 @@ body {
   justify-items: start;
   min-width: 280px;
   padding: 32px;
-  border: 1px solid #374151;
+  border: 1px solid #c8b97e;
   border-radius: 12px;
-  background: #1f2937;
+  background: #f7f0d6;
+  box-shadow: 0 12px 32px rgba(93, 78, 20, 0.18);
 }
 
 h1 {
   margin: 0;
   font-size: 28px;
+  color: #6f5e0a;
 }
 
 p {
   margin: 0;
-  color: #d1d5db;
+  color: #7c7040;
 }
 
 button {
   appearance: none;
-  border: 1px solid #4b5563;
+  border: 1px solid #6f5e0a;
   border-radius: 8px;
   padding: 10px 14px;
   font: inherit;
-  background: #2563eb;
+  background: #b8860b;
   color: #ffffff;
   cursor: pointer;
 }
 
 button:hover {
-  background: #1d4ed8;
+  background: #9a7009;
 }
 
 output {
   font-size: 20px;
   font-variant-numeric: tabular-nums;
-  color: #93c5fd;
+  color: #6f5e0a;
 }
 `,
     'script.js': `let count = 0;
@@ -105,6 +107,7 @@ if (button && output) {
   const statusPosition = document.getElementById('status-position');
   const statusMessage = document.getElementById('status-message');
   const newFileButton = document.getElementById('new-file');
+  const deleteButton = document.getElementById('delete-file');
   const saveButton = document.getElementById('save');
   const runButton = document.getElementById('run');
   const resetButton = document.getElementById('reset');
@@ -118,6 +121,7 @@ if (button && output) {
   let activeFile = state.activeFile;
   let previewUrls = [];
   let statusTimer = 0;
+  let previewTimer = 0;
 
   function defaultState() {
     return {
@@ -187,6 +191,11 @@ if (button && output) {
     statusTimer = window.setTimeout(() => {
       statusMessage.textContent = 'Ready';
     }, 2500);
+  }
+
+  function schedulePreview() {
+    window.clearTimeout(previewTimer);
+    previewTimer = window.setTimeout(buildPreview, 800);
   }
 
   function renderFileList() {
@@ -368,6 +377,28 @@ if (button && output) {
     setStatus('Created ' + name);
   }
 
+  function deleteFile() {
+    if (Object.keys(files).length <= 1) {
+      setStatus('Cannot delete the last file');
+      return;
+    }
+
+    const name = activeFile;
+    const confirmed = window.confirm('Delete ' + name + '? This cannot be undone.');
+    if (!confirmed) {
+      return;
+    }
+
+    delete files[name];
+    const next = Object.keys(files).sort()[0];
+    activeFile = next;
+    saveState();
+    renderFileList();
+    openFile(next);
+    buildPreview();
+    setStatus('Deleted ' + name);
+  }
+
   function resetWorkspace() {
     const confirmed = window.confirm('Reset all files to defaults? This cannot be undone.');
     if (!confirmed) {
@@ -387,6 +418,7 @@ if (button && output) {
     files[activeFile] = editor.value;
     saveState();
     updateStatus();
+    schedulePreview();
   });
 
   editor.addEventListener('keyup', updateStatus);
@@ -405,10 +437,32 @@ if (button && output) {
     files[activeFile] = editor.value;
     saveState();
     updateStatus();
+    schedulePreview();
+  });
+
+  window.addEventListener('keydown', (event) => {
+    const mod = event.ctrlKey || event.metaKey;
+    if (!mod) {
+      return;
+    }
+
+    if (event.key === 's' || event.key === 'S') {
+      event.preventDefault();
+      saveState();
+      setStatus('Saved');
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      buildPreview();
+      setStatus('Preview updated');
+    }
   });
 
   if (newFileButton) {
     newFileButton.addEventListener('click', createFile);
+  }
+
+  if (deleteButton) {
+    deleteButton.addEventListener('click', deleteFile);
   }
 
   if (saveButton) {
