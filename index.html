@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Workspace</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Coding Workspace</div>
+    <div class="actions">
+      <button id="new-file" type="button">New File</button>
+      <button id="save" type="button">Save</button>
+      <button id="run" type="button">Run</button>
+      <button id="reset" type="button">Reset</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar">
+      <div class="pane-header">Files</div>
+      <ul id="file-list" class="file-list"></ul>
+    </aside>
+
+    <section class="editor-pane">
+      <div class="pane-header">
+        <span id="current-file">index.html</span>
+      </div>
+      <textarea
+        id="editor"
+        spellcheck="false"
+        autocapitalize="off"
+        autocomplete="off"
+        autocorrect="off"
+        wrap="off"
+      ></textarea>
+    </section>
+
+    <section class="preview-pane">
+      <div class="pane-header">Preview</div>
+      <iframe
+        id="preview"
+        title="Workspace preview"
+        sandbox="allow-scripts allow-forms allow-modals allow-popups"
+      ></iframe>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="status-file">index.html</span>
+    <span id="status-position">Ln 1, Col 1</span>
+    <span id="status-message">Ready</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
