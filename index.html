@@ -3,106 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeBridge Studio</title>
+    <title>VibeBridge Studio · Khaki</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Top Navigation -->
-    <header class="gh-header">
-        <div class="gh-left">
-            <svg height="32" viewBox="0 0 16 16" width="32" fill="#e6edf3"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
-            <span class="repo-title">new-repo / <strong>vibe-studio</strong></span>
-            <span class="badge">Public</span>
-        </div>
-        <div class="gh-center">
-            <div class="search-bar">
-                <svg viewBox="0 0 16 16" width="16" height="16" fill="#7d8590"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"></path></svg>
-                <input type="text" placeholder="Type / to search">
+    <div id="vb-studio-shell">
+        <!-- LEFT: File Tree -->
+        <aside class="sk-left">
+            <div class="sk-search">Search project…</div>
+            <div class="sk-tree-toolbar">
+                <button id="btn-refresh">⟳ Refresh</button>
+                <button id="btn-push" disabled>Push staged (0)</button>
             </div>
-        </div>
-        <div class="gh-right">
-            <div class="avatar"></div>
-        </div>
-    </header>
-
-    <!-- Sub Navigation -->
-    <nav class="gh-subnav">
-        <button class="tab active">Code</button>
-        <button class="tab">Issues</button>
-        <button class="tab">Pull requests</button>
-        <button class="tab">Actions</button>
-    </nav>
-
-    <!-- Main Workspace -->
-    <main class="workspace">
-        <!-- Left: File Tree -->
-        <aside class="sidebar">
-            <div class="branch-selector">
-                <svg viewBox="0 0 16 16" width="16" height="16" fill="#7d8590"><path d="M9.5 3.25a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25Zm-6 0a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Zm8.25-.75a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z"></path></svg>
-                <span>main</span>
+            <div class="sk-tree" id="file-tree">
+                <div class="sk-tree-empty">Connect a repo to start.</div>
             </div>
-            <div class="file-tree" id="fileTree">
-                <div class="tree-item folder">
-                    <svg viewBox="0 0 16 16" width="16" height="16" fill="#7d8590"><path d="M1.75 1A1.75 1.75 0 0 0 0 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0 0 16 13.25v-8.5A1.75 1.75 0 0 0 14.25 3H7.5a.25.25 0 0 1-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75Z"></path></svg>
-                    <span>.github</span>
-                </div>
-                <div class="tree-item file active">
-                    <svg viewBox="0 0 16 16" width="16" height="16" fill="#7d8590"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path></svg>
-                    <span>index.html</span>
-                </div>
-                <div class="tree-item file">
-                    <svg viewBox="0 0 16 16" width="16" height="16" fill="#7d8590"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path></svg>
-                    <span>style.css</span>
-                </div>
-                <div class="tree-item file">
-                    <svg viewBox="0 0 16 16" width="16" height="16" fill="#7d8590"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path></svg>
-                    <span>app.js</span>
-                </div>
+            <div class="sk-menu">
+                <button id="btn-options">Options</button>
+                <button id="btn-wipe" style="color:#b3402e">☢ Wipe data</button>
             </div>
-            <div class="sidebar-footer">
-                <button class="btn-primary" id="connectBtn">Authorize GitHub</button>
-            </div>
+            <div class="sk-legal">Khaki Edition · v1.0</div>
         </aside>
 
-        <!-- Center: Editor -->
-        <section class="editor-area">
-            <div class="editor-tabs">
-                <div class="tab active">index.html <span class="close">×</span></div>
-                <div class="tab">style.css <span class="close">×</span></div>
+        <!-- CENTER: Editor & Chat -->
+        <section class="sk-center">
+            <div class="sk-tabs">
+                <div class="sk-tab on" data-view="github">github</div>
+                <div class="sk-tab" data-view="chat">chat</div>
             </div>
-            <div class="editor-content">
-                <textarea id="code" spellcheck="false"><!-- Welcome to VibeBridge Studio -->
-<!DOCTYPE html>
-<html>
-<body>
-  <h1>Hello World</h1>
-</body>
-</html></textarea>
-            </div>
-            <div class="editor-status">
-                <span>Ln 1, Col 1</span>
-                <span>UTF-8</span>
-                <span>HTML</span>
+            <div class="sk-body" id="sk-body">
+                <!-- Editor Tabs -->
+                <div class="sk-editor-tabs" id="editor-tabs" style="display:none;"></div>
+                
+                <!-- Main Content Area -->
+                <div id="main">
+                    <!-- Chat View -->
+                    <div id="chat-view">
+                        <div id="flow"></div>
+                    </div>
+                    
+                    <!-- Editor View -->
+                    <div id="editor-view" style="display:none; flex:1; position:relative;">
+                        <textarea id="code-editor" class="sk-code" spellcheck="false" placeholder="// Select a file from the left..."></textarea>
+                    </div>
+
+                    <!-- Composer -->
+                    <div id="composerwrap">
+                        <div id="composer">
+                            <textarea id="input" rows="1" placeholder="Message VibeBridge…"></textarea>
+                            <div class="crow">
+                                <button id="paste" class="pill">Paste</button>
+                                <span class="spacer"></span>
+                                <button id="send" class="sendbtn" disabled>↑</button>
+                            </div>
+                        </div>
+                        <div class="footnote">tokens stay in this tab · payloads parse locally</div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- Right: AI Chat -->
-        <aside class="chat-panel">
-            <div class="chat-header">
-                <svg viewBox="0 0 16 16" width="16" height="16" fill="#7d8590"><path d="M1.75 1h12.5c.966 0 1.75.784 1.75 1.75v8.5A1.75 1.75 0 0 1 14.25 13H8.061l-2.574 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25v-8.5C0 1.784.784 1 1.75 1Z"></path></svg>
-                <span>VibeBridge AI</span>
+        <!-- RIGHT: Utilities -->
+        <aside class="sk-right">
+            <div class="sk-card">
+                <h4>GitHub credentials</h4>
+                <div class="sk-row"><span>Repo</span><span class="sk-val" id="val-repo">—</span></div>
+                <div class="sk-row"><span>PAT</span><span class="sk-val" id="val-pat">—</span></div>
+                <button class="sk-btn" id="btn-copy-token">Copy token</button>
             </div>
-            <div class="chat-messages" id="chat">
-                <div class="msg ai">
-                    <div class="bubble">Ready. Paste a payload or ask for changes.</div>
+            <button class="sk-btn solid" id="btn-connect">⚡ Connect GitHub</button>
+            <div class="sk-card">
+                <h4>How to use</h4>
+                <div class="sk-steps">
+                    <b>1.</b> Connect your GitHub repo.<br>
+                    <b>2.</b> Ask your AI for a VibeBridge payload.<br>
+                    <b>3.</b> Paste it in the chat.<br>
+                    <b>4.</b> Review and push.
                 </div>
             </div>
-            <div class="chat-input">
-                <textarea id="input" rows="1" placeholder="Ask VibeBridge..."></textarea>
-                <button class="btn-send" id="sendBtn">Send</button>
-            </div>
         </aside>
-    </main>
+    </div>
+
+    <!-- Hidden inputs for logic -->
+    <input type="hidden" id="pat">
+    <input type="hidden" id="repo">
+    <input type="hidden" id="branch" value="main">
 
     <script src="github.js"></script>
     <script src="app.js"></script>

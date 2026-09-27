@@ -58,7 +58,6 @@ async function commitOps(ops, message) {
         baseTree = (await api("GET", `/repos/${OWNER}/${REPO}/git/commits/${refSha}`)).tree.sha;
     } catch (e) {
         if (e.code !== 404) throw e;
-        // Repo might be empty, verify it exists
         await api("GET", `/repos/${OWNER}/${REPO}`);
     }
 
@@ -102,6 +101,18 @@ async function commitOps(ops, message) {
     else await api("POST", `/repos/${OWNER}/${REPO}/git/refs`, { ref: `refs/heads/${BRANCH}`, sha: commit.sha });
     
     return commit;
+}
+
+async function getTree() {
+    const ref = await api("GET", `/repos/${OWNER}/${REPO}/git/ref/heads/${BRANCH}`);
+    const commit = await api("GET", `/repos/${OWNER}/${REPO}/git/commits/${ref.object.sha}`);
+    const tree = await api("GET", `/repos/${OWNER}/${REPO}/git/trees/${commit.tree.sha}?recursive=1`);
+    return tree.tree.filter(i => i.type === 'blob');
+}
+
+async function getFile(path) {
+    const res = await api("GET", `/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`);
+    return unb64(res.content);
 }
 
 // Parser for VibeBridge payloads
