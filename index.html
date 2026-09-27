@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flappy Bird — DQN Reinforcement Learning</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <h1>Flappy DQN</h1>
+      <p class="sub">Deep Q-Network · learns from experience</p>
+
+      <div class="controls">
+        <button id="btnTrain" class="btn primary">▶ Train</button>
+        <button id="btnWatch" class="btn">👁 Watch</button>
+        <button id="btnPause" class="btn">⏸ Pause</button>
+      </div>
+
+      <div class="controls">
+        <button id="btnSave" class="btn small">💾 Save</button>
+        <button id="btnLoad" class="btn small">📂 Load</button>
+        <button id="btnReset" class="btn small danger">⟲ Reset Brain</button>
+      </div>
+
+      <div class="field">
+        <label>Training speed <span id="speedVal">10</span> steps/frame</label>
+        <input type="range" id="speed" min="1" max="200" value="10" />
+      </div>
+
+      <div class="field">
+        <label class="check">
+          <input type="checkbox" id="render" checked /> Render while training
+        </label>
+      </div>
+
+      <h2>Statistics</h2>
+      <div class="stats">
+        <div class="stat"><span class="k">Episode</span><span class="v" id="statEp">0</span></div>
+        <div class="stat"><span class="k">Total steps</span><span class="v" id="statSteps">0</span></div>
+        <div class="stat"><span class="k">Score</span><span class="v" id="statScore">0</span></div>
+        <div class="stat"><span class="k">Best</span><span class="v" id="statBest">0</span></div>
+        <div class="stat"><span class="k">Avg (50)</span><span class="v" id="statAvg">0</span></div>
+        <div class="stat"><span class="k">Epsilon</span><span class="v" id="statEps">1.00</span></div>
+        <div class="stat"><span class="k">Loss</span><span class="v" id="statLoss">–</span></div>
+        <div class="stat"><span class="k">Memory</span><span class="v" id="statMem">0</span></div>
+      </div>
+
+      <div id="toast" class="toast"></div>
+    </aside>
+
+    <main class="stage">
+      <canvas id="game" width="360" height="560"></canvas>
+    </main>
+  </div>
+
+  <script src="js/nn.js"></script>
+  <script src="js/replay.js"></script>
+  <script src="js/agent.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/env.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
