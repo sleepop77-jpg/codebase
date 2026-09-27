@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>VibeBridge · RL Flappy Bird</title>
+<style>
+  :root{--bg:#0b0e14;--panel:#12161f;--card:#161b22;--line:#30363d;--text:#e6edf3;--dim:#8b949e;--accent:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:var(--panel)}
+  header h1{font-size:14px;font-weight:700;letter-spacing:.5px}
+  header .tag{font-size:10px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:999px;font-weight:600}
+  .wrap{flex:1;display:flex;min-height:0}
+  .game-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:12px;position:relative}
+  canvas{border:1px solid var(--line);border-radius:8px;background:#000;image-rendering:pixelated;max-width:100%;max-height:100%}
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .overlay .score{font-size:48px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.6);opacity:.9}
+  .side{width:340px;min-width:280px;border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;overflow-y:auto;padding:12px;gap:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px}
+  .card h2{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:8px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+  .row label{font-size:11px;color:var(--dim);min-width:70px}
+  .row input,.row select{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px;color:var(--text);font-size:12px;outline:none}
+  .row input:focus,.row select:focus{border-color:var(--accent)}
+  button{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 14px;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--green);border-color:transparent;color:#fff}
+  button.primary:hover{filter:brightness(1.1)}
+  button.danger{background:rgba(248,81,73,.15);border-color:rgba(248,81,73,.4);color:var(--red)}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .stat{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+  .stat .k{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)}
+  .stat .v{font-size:16px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+  .log{flex:1;min-height:80px;max-height:200px;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px;font:11px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--dim)}
+  .log div{padding:1px 0;border-bottom:1px solid rgba(48,54,61,.3)}
+  .log .good{color:var(--green)}.log .bad{color:var(--red)}.log .info{color:var(--accent)}
+  .check{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--dim);cursor:pointer}
+  .check input{accent-color:var(--accent)}
+  @media(max-width:800px){.wrap{flex-direction:column}.side{width:100%;border-left:none;border-top:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header>
+  <span class="tag">DQN</span>
+  <h1>RL Flappy Bird</h1>
+</header>
+<div class="wrap">
+  <div class="game-col">
+    <canvas id="game" width="288" height="512"></canvas>
+    <div class="overlay"><div class="score" id="liveScore">0</div></div>
+  </div>
+  <div class="side">
+    <div class="card">
+      <h2>Training Control</h2>
+      <div class="row">
+        <button id="btnTrain" class="primary">▶ Train</button>
+        <button id="btnWatch">👁 Watch</button>
+        <button id="btnPause">⏸ Pause</button>
+      </div>
+      <div class="row">
+        <label>Speed</label>
+        <input type="range" id="speedSlider" min="1" max="50" value="1">
+        <span id="speedVal" style="font-size:11px;color:var(--dim);min-width:24px">1×</span>
+      </div>
+      <div class="row">
+        <label>Epsilon</label>
+        <span id="epsDisplay" style="font-size:12px;font-weight:600;color:var(--amber)">1.000</span>
+      </div>
+      <div class="check"><input type="checkbox" id="chkTurbo"><span>Turbo (no render)</span></div>
+      <div class="check"><input type="checkbox" id="chkSound" checked><span>Sound effects</span></div>
+    </div>
+    <div class="card">
+      <h2>Statistics</h2>
+      <div class="stat-grid">
+        <div class="stat"><div class="k">Episode</div><div class="v" id="stEp">0</div></div>
+        <div class="stat"><div class="k">Best Score</div><div class="v" id="stBest">0</div></div>
+        <div class="stat"><div class="k">Avg (50)</div><div class="v" id="stAvg">0</div></div>
+        <div class="stat"><div class="k">Loss</div><div class="v" id="stLoss">—</div></div>
+        <div class="stat"><div class="k">Memory</div><div class="v" id="stMem">0</div></div>
+        <div class="stat"><div class="k">Steps</div><div class="v" id="stSteps">0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Model</h2>
+      <div class="row">
+        <button id="btnSave">💾 Save</button>
+        <button id="btnLoad">📂 Load</button>
+        <button id="btnReset" class="danger">⟲ Reset</button>
+      </div>
+      <div class="row">
+        <button id="btnExport">⬇ Export JSON</button>
+        <button id="btnImport">⬆ Import JSON</button>
+      </div>
+      <input type="file" id="fileImport" accept=".json" style="display:none">
+    </div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column">
+      <h2>Log</h2>
+      <div class="log" id="logBox"></div>
+    </div>
+  </div>
+</div>
+<script src="nn.js"></script>
+<script src="env.js"></script>
+<script src="agent.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
