@@ -1,65 +1,324 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Flappy Bird — DQN Reinforcement Learning</title>
-<link rel="stylesheet" href="css/styles.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Flappy Bird — DQN RL · BUILD v3</title>
+<style>
+:root{--bg:#0b0e14;--panel:#12161f;--card:#161b22;--line:#30363d;--text:#e6edf3;--dim:#8b949e;--accent:#4493f8;--green:#3fb950;--red:#f85149;--amber:#d29922}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:8px;flex:none;flex-wrap:wrap}
+header h1{font-size:13px;font-weight:700;letter-spacing:.3px}
+header .tag{font-size:9px;font-weight:700;background:var(--accent);color:#04222b;padding:2px 7px;border-radius:999px}
+header .ver{font-size:9px;font-weight:800;letter-spacing:.5px;background:rgba(210,153,34,.18);color:var(--amber);border:1px solid rgba(210,153,34,.45);padding:2px 8px;border-radius:999px}
+header .sub{font-size:10px;color:var(--dim);margin-left:auto}
+.wrap{flex:1;min-height:0;display:flex;gap:0}
+.stage{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;padding:8px;position:relative;background:#05070c}
+canvas{background:#05070c;border:1px solid var(--line);border-radius:8px;width:auto;height:auto;max-width:100%;max-height:100%;aspect-ratio:288/512;display:block}
+.hud{position:absolute;top:14px;left:0;right:0;text-align:center;font-size:34px;font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.7);pointer-events:none}
+.side{width:300px;flex:none;border-left:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px}
+.card h2{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin-bottom:8px}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.row:last-child{margin-bottom:0}
+.row label{font-size:11px;color:var(--dim);min-width:54px}
+.row input[type=range]{flex:1;accent-color:var(--accent)}
+.row .val{font-size:11px;color:var(--dim);min-width:30px;text-align:right}
+button{flex:1;min-width:0;background:#21262d;border:1px solid var(--line);border-radius:6px;padding:7px 6px;color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--green);border-color:transparent;color:#04140b}
+button.warn{background:rgba(210,153,34,.15);border-color:rgba(210,153,34,.4);color:var(--amber)}
+button.danger{background:rgba(248,81,73,.12);border-color:rgba(248,81,73,.35);color:var(--red)}
+.chk{display:flex;gap:6px;align-items:center;font-size:11px;color:var(--dim);cursor:pointer;margin:2px 0}
+.chk input{accent-color:var(--accent);width:auto;margin:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+.stat .k{font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--dim)}
+.stat .v{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.log{height:120px;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px;font:10.5px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--dim)}
+.log div{padding:1px 0;border-bottom:1px solid rgba(48,54,61,.25);word-break:break-word}
+.log .good{color:var(--green)}.log .bad{color:var(--red)}.log .info{color:var(--accent)}
+input[type=file]{display:none}
+@media(max-width:760px){
+  .wrap{flex-direction:column}
+  .stage{flex:none;height:46vh;padding:6px}
+  canvas{max-height:100%}
+  .side{width:100%;flex:1;border-left:none;border-top:1px solid var(--line)}
+  .hud{font-size:26px;top:8px}
+}
+</style>
 </head>
 <body>
-  <div class="app">
-    <aside class="panel">
-      <h1>Flappy DQN</h1>
-      <p class="sub">Deep Q-Network · learns from experience</p>
-
-      <div class="controls">
-        <button id="btnTrain" class="btn primary">▶ Train</button>
-        <button id="btnWatch" class="btn">👁 Watch</button>
-        <button id="btnPause" class="btn">⏸ Pause</button>
-      </div>
-
-      <div class="controls">
-        <button id="btnSave" class="btn small">💾 Save</button>
-        <button id="btnLoad" class="btn small">📂 Load</button>
-        <button id="btnReset" class="btn small danger">⟲ Reset Brain</button>
-      </div>
-
-      <div class="field">
-        <label>Training speed <span id="speedVal">10</span> steps/frame</label>
-        <input type="range" id="speed" min="1" max="200" value="10" />
-      </div>
-
-      <div class="field">
-        <label class="check">
-          <input type="checkbox" id="render" checked /> Render while training
-        </label>
-      </div>
-
-      <h2>Statistics</h2>
-      <div class="stats">
-        <div class="stat"><span class="k">Episode</span><span class="v" id="statEp">0</span></div>
-        <div class="stat"><span class="k">Total steps</span><span class="v" id="statSteps">0</span></div>
-        <div class="stat"><span class="k">Score</span><span class="v" id="statScore">0</span></div>
-        <div class="stat"><span class="k">Best</span><span class="v" id="statBest">0</span></div>
-        <div class="stat"><span class="k">Avg (50)</span><span class="v" id="statAvg">0</span></div>
-        <div class="stat"><span class="k">Epsilon</span><span class="v" id="statEps">1.00</span></div>
-        <div class="stat"><span class="k">Loss</span><span class="v" id="statLoss">–</span></div>
-        <div class="stat"><span class="k">Memory</span><span class="v" id="statMem">0</span></div>
-      </div>
-
-      <div id="toast" class="toast"></div>
-    </aside>
-
-    <main class="stage">
-      <canvas id="game" width="360" height="560"></canvas>
-    </main>
+<header>
+  <span class="tag">DQN</span>
+  <h1>Flappy Bird — RL</h1>
+  <span class="ver" id="buildVer">BUILD v3</span>
+  <span class="sub">Export / Import live</span>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <canvas id="game" width="288" height="512"></canvas>
+    <div class="hud" id="liveScore">0</div>
   </div>
+  <div class="side">
+    <div class="card">
+      <h2>Control</h2>
+      <div class="row">
+        <button id="btnTrain" class="primary">▶ Train</button>
+        <button id="btnWatch">👁 Watch</button>
+        <button id="btnPause">⏸ Pause</button>
+      </div>
+      <div class="row">
+        <label>Speed</label>
+        <input type="range" id="speed" min="1" max="30" value="1">
+        <span class="val" id="speedVal">1×</span>
+      </div>
+      <div class="chk"><input type="checkbox" id="turbo"><span>Turbo (skip render, time‑budgeted)</span></div>
+      <div class="chk"><input type="checkbox" id="sound" checked><span>Sound</span></div>
+    </div>
+    <div class="card">
+      <h2>Model</h2>
+      <div class="row">
+        <button id="btnSave">💾 Save</button>
+        <button id="btnLoad">📂 Load</button>
+      </div>
+      <div class="row">
+        <button id="btnExport" class="warn">⬇ Export JSON</button>
+        <button id="btnImport" class="warn">⬆ Import JSON</button>
+      </div>
+      <div class="row">
+        <button id="btnReset" class="danger">⟲ Reset Brain</button>
+      </div>
+      <input type="file" id="fileImport" accept=".json,application/json">
+    </div>
+    <div class="card">
+      <h2>Statistics</h2>
+      <div class="grid">
+        <div class="stat"><div class="k">Episode</div><div class="v" id="stEp">0</div></div>
+        <div class="stat"><div class="k">Steps</div><div class="v" id="stSteps">0</div></div>
+        <div class="stat"><div class="k">Score</div><div class="v" id="stScore">0</div></div>
+        <div class="stat"><div class="k">Best</div><div class="v" id="stBest">0</div></div>
+        <div class="stat"><div class="k">Avg (50)</div><div class="v" id="stAvg">0.0</div></div>
+        <div class="stat"><div class="k">Epsilon</div><div class="v" id="stEps">1.000</div></div>
+        <div class="stat"><div class="k">Loss</div><div class="v" id="stLoss">—</div></div>
+        <div class="stat"><div class="k">Memory</div><div class="v" id="stMem">0</div></div>
+      </div>
+    </div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <h2>Log</h2>
+      <div class="log" id="logBox" style="flex:1;height:auto"></div>
+    </div>
+  </div>
+</div>
 
-  <script src="js/nn.js"></script>
-  <script src="js/replay.js"></script>
-  <script src="js/agent.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/env.js"></script>
-  <script src="js/app.js"></script>
+<script>
+console.log('FLAPPY DQN BUILD v3 loaded');
+/* ---------- Neural net: 4 -> 32 -> 32 -> 2, ReLU hidden, linear out, Adam ---------- */
+function randn(){var u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function DenseNet(sizes){
+  this.sizes=sizes.slice();this.L=sizes.length-1;this.W=[];this.b=[];
+  for(var l=0;l<this.L;l++){var nin=sizes[l],nout=sizes[l+1],sc=Math.sqrt(2/nin),Wl=[];
+    for(var i=0;i<nout;i++){var row=new Float64Array(nin);for(var j=0;j<nin;j++)row[j]=randn()*sc;Wl.push(row);}
+    this.W.push(Wl);this.b.push(new Float64Array(nout));}
+  this.adamInit();
+}
+DenseNet.prototype.adamInit=function(){
+  this.t=0;this.b1=0.9;this.b2=0.999;this.e=1e-8;this.mW=[];this.vW=[];this.mb=[];this.vb=[];
+  for(var l=0;l<this.L;l++){var no=this.sizes[l+1],ni=this.sizes[l],mW=[],vW=[];
+    for(var i=0;i<no;i++){mW.push(new Float64Array(ni));vW.push(new Float64Array(ni));}
+    this.mW.push(mW);this.vW.push(vW);this.mb.push(new Float64Array(no));this.vb.push(new Float64Array(no));}
+};
+DenseNet.prototype.forward=function(x){
+  var acts=[x instanceof Float64Array?x:Float64Array.from(x)],zs=[],a=acts[0];
+  for(var l=0;l<this.L;l++){var Wl=this.W[l],bl=this.b[l],no=Wl.length,ni=Wl[0].length,z=new Float64Array(no);
+    for(var i=0;i<no;i++){var s=bl[i],r=Wl[i];for(var j=0;j<ni;j++)s+=r[j]*a[j];z[i]=s;}
+    zs.push(z);var out=new Float64Array(no),last=(l===this.L-1);
+    for(var k=0;k<no;k++)out[k]=last?z[k]:Math.max(0,z[k]);
+    acts.push(out);a=out;}
+  this._c={acts:acts,zs:zs};return a;
+};
+DenseNet.prototype.predict=function(x){return this.forward(x);};
+DenseNet.prototype.train=function(x,target,lr){
+  var out=this.forward(x),c=this._c,n=out.length,delta=new Float64Array(n),loss=0,i,j;
+  for(i=0;i<n;i++){var d=out[i]-target[i];loss+=d*d;delta[i]=2*d/n;}loss/=n;
+  var gW=[],gB=[];
+  for(var l=0;l<this.L;l++){var no=this.sizes[l+1],ni=this.sizes[l],gw=[];for(i=0;i<no;i++)gw.push(new Float64Array(ni));gW.push(gw);gB.push(new Float64Array(no));}
+  for(var l2=this.L-1;l2>=0;l2--){
+    var ap=c.acts[l2],dz;
+    if(l2===this.L-1){dz=delta;}else{var z=c.zs[l2];dz=new Float64Array(delta.length);for(i=0;i<delta.length;i++)dz[i]=z[i]>0?delta[i]:0;}
+    for(i=0;i<dz.length;i++){gB[l2][i]=dz[i];var gr=gW[l2][i];for(j=0;j<ap.length;j++)gr[j]+=dz[i]*ap[j];}
+    if(l2>0){var W=this.W[l2],prev=new Float64Array(ap.length);for(i=0;i<dz.length;i++){var dv=dz[i],pr=W[i];for(j=0;j<pr.length;j++)prev[j]+=dv*pr[j];}delta=prev;}
+  }
+  this.t++;var c1=1-Math.pow(this.b1,this.t),c2=1-Math.pow(this.b2,this.t);
+  for(var l3=0;l3<this.L;l3++){var no3=this.sizes[l3+1];
+    for(i=0;i<no3;i++){var ni3=this.W[l3][i].length;
+      for(j=0;j<ni3;j++){var g=gW[l3][i][j];this.mW[l3][i][j]=this.b1*this.mW[l3][i][j]+(1-this.b1)*g;this.vW[l3][i][j]=this.b2*this.vW[l3][i][j]+(1-this.b2)*g*g;this.W[l3][i][j]-=lr*(this.mW[l3][i][j]/c1)/(Math.sqrt(this.vW[l3][i][j]/c2)+this.e);}
+      var gb=gB[l3][i];this.mb[l3][i]=this.b1*this.mb[l3][i]+(1-this.b1)*gb;this.vb[l3][i]=this.b2*this.vb[l3][i]+(1-this.b2)*gb*gb;this.b[l3][i]-=lr*(this.mb[l3][i]/c1)/(Math.sqrt(this.vb[l3][i]/c2)+this.e);}
+  }
+  return loss;
+};
+DenseNet.prototype.copyFrom=function(o){for(var l=0;l<this.L;l++){for(var i=0;i<this.W[l].length;i++){this.b[l][i]=o.b[l][i];var a=this.W[l][i],b=o.W[l][i];for(var j=0;j<a.length;j++)a[j]=b[j];}}};
+DenseNet.prototype.serialize=function(){var W=[],b=[];for(var l=0;l<this.L;l++){var wl=[];for(var i=0;i<this.W[l].length;i++)wl.push(Array.from(this.W[l][i]));W.push(wl);b.push(Array.from(this.b[l]));}return{sizes:this.sizes,W:W,b:b};};
+DenseNet.deserialize=function(d){var net=new DenseNet(d.sizes);for(var l=0;l<net.L;l++){for(var i=0;i<d.W[l].length;i++){net.b[l][i]=d.b[l][i];var a=net.W[l][i],b=d.W[l][i];for(var j=0;j<a.length;j++)a[j]=b[j];}}net.adamInit();return net;};
+
+/* ---------- Environment ---------- */
+var G=0.42,JF=-7.2,TV=14,PS=3,GAP=130,PW=52,PSP=200,BR=12,CW=288,CH=512,GY=CH-40,BX=60;
+function FlappyEnv(cv){this.cv=cv;this.cx=cv?cv.getContext('2d'):null;this.reset();}
+FlappyEnv.prototype.reset=function(){
+  this.y=CH/2;this.vy=0;this.pipes=[];this.score=0;this.steps=0;this.done=false;
+  this.spawn(CW+60);this.spawn(CW+60+PSP);this.state=this.getState();return this.state;
+};
+FlappyEnv.prototype.spawn=function(x){var mn=60,mx=GY-GAP-60,t=mn+Math.random()*(mx-mn);this.pipes.push({x:x,top:t,bot:t+GAP,passed:false});};
+FlappyEnv.prototype.nextPipe=function(){for(var i=0;i<this.pipes.length;i++)if(this.pipes[i].x+PW>BX-BR)return this.pipes[i];return null;};
+FlappyEnv.prototype.getState=function(){
+  var p=this.nextPipe(),ny=this.y/CH,nv=this.vy/TV,nd=1,ng=0;
+  if(p){nd=Math.max(0,p.x-BX)/CW;ng=((p.top+p.bot)/2-this.y)/CH;}
+  return new Float64Array([ny,nv,nd,ng]);
+};
+FlappyEnv.prototype.step=function(action){
+  if(this.done)return{state:this.state,reward:0,done:true,score:this.score};
+  if(action===1)this.vy=JF;
+  this.vy+=G;if(this.vy>TV)this.vy=TV;this.y+=this.vy;this.steps++;
+  var reward=0.01,i;
+  for(i=this.pipes.length-1;i>=0;i--){var pp=this.pipes[i];pp.x-=PS;
+    if(!pp.passed&&pp.x+PW<BX-BR){pp.passed=true;this.score++;reward+=1;}
+    if(pp.x+PW<-PW)this.pipes.splice(i,1);}
+  var right=this.pipes.length?this.pipes[this.pipes.length-1].x:BX;
+  if(right<CW+50)this.spawn(right+PSP);
+  if(this.y+BR>=GY||this.y-BR<=0){this.done=true;reward=-10;}
+  for(i=0;i<this.pipes.length;i++){var q=this.pipes[i];
+    if(BX+BR>q.x&&BX-BR<q.x+PW&&(this.y-BR<q.top||this.y+BR>q.bot)){this.done=true;reward=-10;}}
+  this.state=this.getState();return{state:this.state,reward:reward,done:this.done,score:this.score};
+};
+FlappyEnv.prototype.render=function(){
+  var c=this.cx;if(!c)return;
+  c.fillStyle='#05070c';c.fillRect(0,0,CW,CH);
+  c.strokeStyle='rgba(68,147,248,.06)';c.lineWidth=1;
+  for(var x=0;x<CW;x+=32){c.beginPath();c.moveTo(x,0);c.lineTo(x,CH);c.stroke();}
+  for(var y=0;y<CH;y+=32){c.beginPath();c.moveTo(0,y);c.lineTo(CW,y);c.stroke();}
+  c.fillStyle='#1a1a2e';c.fillRect(0,GY,CW,CH-GY);
+  for(var i=0;i<this.pipes.length;i++){var p=this.pipes[i];
+    c.fillStyle='#3fb950';c.fillRect(p.x,0,PW,p.top);c.fillRect(p.x,p.bot,PW,GY-p.bot);
+    c.fillStyle='#2ea043';c.fillRect(p.x-2,p.top-14,PW+4,14);c.fillRect(p.x-2,p.bot,PW+4,14);}
+  c.save();c.translate(BX,this.y);
+  c.rotate(Math.min(Math.PI/4,Math.max(-Math.PI/4,this.vy*0.08)));
+  c.fillStyle='#fbbf24';c.beginPath();c.arc(0,0,BR,0,Math.PI*2);c.fill();
+  c.fillStyle='#fff';c.beginPath();c.arc(4,-4,4,0,Math.PI*2);c.fill();
+  c.fillStyle='#000';c.beginPath();c.arc(6,-4,2,0,Math.PI*2);c.fill();
+  c.restore();
+};
+
+/* ---------- DQN agent ---------- */
+function ReplayBuffer(cap){this.cap=cap;this.data=[];this.pos=0;}
+ReplayBuffer.prototype.push=function(it){if(this.data.length<this.cap)this.data.push(it);else this.data[this.pos]=it;this.pos=(this.pos+1)%this.cap;};
+ReplayBuffer.prototype.sample=function(n){var o=new Array(n);for(var i=0;i<n;i++)o[i]=this.data[(Math.random()*this.data.length)|0];return o;};
+Object.defineProperty(ReplayBuffer.prototype,'size',{get:function(){return this.data.length;}});
+ReplayBuffer.prototype.clear=function(){this.data=[];this.pos=0;};
+
+var CAP=20000,BATCH=64,GAMMA=0.99,LR=0.001,SYNC=1000,WARM=500,E0=1.0,E1=0.02,ED=0.995,CLIP=1.0;
+function DQNAgent(){
+  this.policy=new DenseNet([4,32,32,2]);this.target=new DenseNet([4,32,32,2]);this.target.copyFrom(this.policy);
+  this.mem=new ReplayBuffer(CAP);this.eps=E0;this.steps=0;this.loss=null;
+}
+DQNAgent.prototype.act=function(s,greedy){
+  if(!greedy&&Math.random()<this.eps)return Math.random()<0.5?0:1;
+  var q=this.policy.predict(s);return q[0]>=q[1]?0:1;
+};
+DQNAgent.prototype.remember=function(s,a,r,s2,d){this.mem.push({s:s,a:a,r:r,s2:s2,d:d});};
+DQNAgent.prototype.learn=function(){
+  this.steps++;if(this.mem.size<Math.max(BATCH,WARM))return null;
+  var b=this.mem.sample(BATCH),sum=0;
+  for(var i=0;i<b.length;i++){var t=b[i],qn=this.target.predict(t.s2),mx=Math.max(qn[0],qn[1]);
+    var y=t.d?t.r:t.r+GAMMA*mx,qc=this.policy.predict(t.s),td=y-qc[t.a];
+    td=Math.max(-CLIP,Math.min(CLIP,td));var tv=new Float64Array([qc[0],qc[1]]);tv[t.a]=qc[t.a]+td;
+    sum+=this.policy.train(t.s,tv,LR);}
+  if(this.steps%SYNC===0)this.target.copyFrom(this.policy);
+  this.loss=sum/BATCH;return this.loss;
+};
+DQNAgent.prototype.endEpisode=function(){this.eps=Math.max(E1,this.eps*ED);};
+DQNAgent.prototype.resetBrain=function(){this.policy=new DenseNet([4,32,32,2]);this.target=new DenseNet([4,32,32,2]);this.target.copyFrom(this.policy);this.mem.clear();this.eps=E0;this.steps=0;this.loss=null;};
+DQNAgent.prototype.serialize=function(){return{policy:this.policy.serialize(),eps:this.eps,steps:this.steps};};
+DQNAgent.prototype.load=function(d){this.policy=DenseNet.deserialize(d.policy);this.target=new DenseNet([4,32,32,2]);this.target.copyFrom(this.policy);this.eps=d.eps!=null?d.eps:E1;this.steps=d.steps||0;this.mem.clear();this.loss=null;};
+
+/* ---------- App ---------- */
+(function(){
+var $=function(s){return document.querySelector(s);};
+var cv=$('#game'),env=new FlappyEnv(cv),agent=new DQNAgent();
+var mode='idle',running=false,speed=1,turbo=false,soundOn=true;
+var episode=0,best=0,scores=[],totalSteps=0,cur=env.reset(),audioCtx=null;
+
+function beep(f,d,v){if(!soundOn)return;try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.frequency.value=f;g.gain.value=v;g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+d);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d);}catch(e){}}
+function log(m,cls){var box=$('#logBox');if(!box)return;var d=document.createElement('div');d.textContent=m;if(cls)d.className=cls;box.appendChild(d);box.scrollTop=box.scrollHeight;if(box.children.length>150)box.removeChild(box.firstChild);}
+function avg(){if(!scores.length)return 0;var s=scores.slice(-50),t=0;for(var i=0;i<s.length;i++)t+=s[i];return t/s.length;}
+function stats(){$('#stEp').textContent=episode;$('#stSteps').textContent=totalSteps;$('#stScore').textContent=env.score;$('#stBest').textContent=best;$('#stAvg').textContent=avg().toFixed(1);$('#stEps').textContent=agent.eps.toFixed(3);$('#stLoss').textContent=agent.loss!=null?agent.loss.toFixed(4):'—';$('#stMem').textContent=agent.mem.size;$('#liveScore').textContent=env.score;}
+
+function doStep(){
+  var a=agent.act(cur,mode==='watch'),r=env.step(a);
+  if(mode==='train'){agent.remember(cur,a,r.reward,r.state,r.done);agent.learn();}
+  cur=r.state;totalSteps++;
+  if(r.done){episode++;if(r.score>best)best=r.score;scores.push(r.score);if(mode==='train')agent.endEpisode();
+    if(r.score>0&&r.score%10===0)log('Ep '+episode+': score '+r.score,'good');
+    if(r.score===0&&episode%25===0)log('Ep '+episode+': died at 0','bad');
+    cur=env.reset();if(soundOn&&r.score>0)beep(880,0.08,0.08);}
+}
+function frame(){
+  if(running){
+    if(turbo){var dl=performance.now()+14;var n=0;while(performance.now()<dl&&n<400){doStep();n++;}}
+    else{for(var i=0;i<speed;i++)doStep();}
+  }
+  if(!turbo)env.render();
+  stats();requestAnimationFrame(frame);
+}
+
+$('#btnTrain').onclick=function(){mode='train';running=true;log('Training started','info');if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();};
+$('#btnWatch').onclick=function(){mode='watch';running=true;log('Watching greedy policy','info');};
+$('#btnPause').onclick=function(){running=!running;log(running?'Resumed':'Paused','info');};
+$('#speed').oninput=function(e){speed=parseInt(e.target.value,10);$('#speedVal').textContent=speed+'×';};
+$('#turbo').onchange=function(e){turbo=e.target.checked;};
+$('#sound').onchange=function(e){soundOn=e.target.checked;};
+
+$('#btnSave').onclick=function(){try{var j=JSON.stringify(agent.serialize());if(j.length>4500000){log('Model too large for localStorage ('+Math.round(j.length/1048576)+' MB). Use Export.','bad');return;}localStorage.setItem('flappy_dqn',j);log('Saved to localStorage ('+Math.round(j.length/1024)+' KB)','good');}catch(e){log('Save failed: '+e.message,'bad');}};
+$('#btnLoad').onclick=function(){try{var raw=localStorage.getItem('flappy_dqn');if(!raw){log('No saved model','bad');return;}agent.load(JSON.parse(raw));log('Loaded from localStorage','good');}catch(e){log('Load failed: '+e.message,'bad');}};
+$('#btnReset').onclick=function(){if(!confirm('Reset brain? Learned weights lost.'))return;agent.resetBrain();episode=0;best=0;scores=[];totalSteps=0;cur=env.reset();log('Brain reset','info');};
+
+function download(name,text,type){
+  try{
+    var blob=new Blob([text],{type:type||'application/octet-stream'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){if(a.parentNode)a.parentNode.removeChild(a);URL.revokeObjectURL(url);},200);
+    return true;
+  }catch(e){return false;}
+}
+$('#btnExport').onclick=function(){
+  var json=JSON.stringify(agent.serialize(),null,2);
+  var name='flappy-dqn-'+Date.now()+'.json';
+  if(download(name,json,'application/json')){log('Exported '+name+' ('+Math.round(json.length/1024)+' KB)','good');return;}
+  try{navigator.clipboard.writeText(json).then(function(){log('Download blocked — JSON copied to clipboard instead','info');},function(){prompt('Copy this JSON:',json);});}
+  catch(e){prompt('Copy this JSON manually:',json);}
+};
+$('#btnImport').onclick=function(){$('#fileImport').click();};
+$('#fileImport').onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  if(f.size>50*1048576){log('File too large','bad');e.target.value='';return;}
+  var rd=new FileReader();
+  rd.onerror=function(){log('Could not read file','bad');};
+  rd.onload=function(ev){try{var p=JSON.parse(ev.target.result);if(!p.policy||!p.policy.sizes||!p.policy.W){log('Invalid model: missing policy weights','bad');return;}agent.load(p);episode=0;best=0;scores=[];totalSteps=0;cur=env.reset();log('Imported '+f.name+' ('+Math.round(f.size/1024)+' KB)','good');}catch(err){log('Import failed: '+err.message,'bad');}};
+  rd.readAsText(f);e.target.value='';
+};
+
+try{var s=localStorage.getItem('flappy_dqn');if(s){agent.load(JSON.parse(s));log('Auto-loaded saved model','info');}}catch(e){}
+env.render();stats();
+log('BUILD v3 active · Export & Import wired','good');
+log('Ready. Press Train to learn, or Watch to fly.','info');
+requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
