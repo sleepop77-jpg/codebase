@@ -143,18 +143,31 @@
   };
   $('#btnImport').onclick = function(){ $('#fileImport').click(); };
   $('#fileImport').onchange = function(e){
-    var file = e.target.files[0];
-    if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev){
-      try{
-        agent.load(JSON.parse(ev.target.result));
-        log('Model imported from '+file.name, 'good');
-      }catch(err){ log('Import failed: '+err.message, 'bad'); }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
+var file = e.target.files[0];
+if(!file) return;
+if(file.size > 50 * 1024 * 1024){
+log('File too large (' + Math.round(file.size/1024/1024) + ' MB)', 'bad');
+e.target.value = '';
+return;
+}
+var reader = new FileReader();
+reader.onerror = function(){ log('Failed to read file', 'bad'); };
+reader.onload = function(ev){
+try{
+var parsed = JSON.parse(ev.target.result);
+if(!parsed.policy || !parsed.policy.sizes){
+log('Invalid model file: missing policy weights', 'bad');
+return;
+}
+agent.load(parsed);
+episode = 0; bestScore = 0; scores = []; totalSteps = 0;
+currentState = env.reset();
+log('Model imported from '+file.name+' (' + Math.round(file.size/1024) + ' KB)', 'good');
+}catch(err){ log('Import failed: '+err.message, 'bad'); }
+};
+reader.readAsText(file);
+e.target.value = '';
+};
 
   try{
     var saved = localStorage.getItem('vb_rl_flappy');
